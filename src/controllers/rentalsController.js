@@ -114,10 +114,11 @@ async function postRentals(req, res) {
 
 async function finishRentals(req,res){
     const { id } = req.params
-    const dateNow = dayjs().format("YYYY-MM-DD")
     try {
-        const rent = (await connection.query('SELECT "daysRented","rentDate", "gameId" FROM rentals WHERE id=($1);',[id])).rows[0]
-        await connection.query('UPDATE rentals SET "returnDate"=($1) WHERE id=($2);',[dateNow,id])
+        const rent = (await connection.query('SELECT * FROM rentals WHERE id=($1);',[id])).rows[0]
+        let delayFee = 0
+        await connection.query('UPDATE rentals SET "returnDate"=NOW(), "delayFee"=($1) WHERE id=($2);',[delayFee,id])
+        res.sendStatus(200)
     } catch (error) {
         console.log(error.message)
         res.sendStatus(500)

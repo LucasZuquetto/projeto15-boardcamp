@@ -36,6 +36,25 @@ async function postRentalsMiddleware(req, res, next) {
    next();
 }
 
+async function finishRentalsMiddleware(req,res,next){
+    const {id} = req.params
+    try {
+        const rentalExists = (await connection.query('SELECT * FROM rentals WHERE id=($1);',[id])).rows[0]
+        if (!rentalExists) {
+            res.sendStatus(404)
+            return
+        }
+        if(rentalExists.returnDate){
+            res.sendStatus(400)
+            return
+        }
+    } catch (error) {
+        console.log(error.message)
+        res.sendStatus(500)
+    }
+    next()
+}
+
 async function deleteRentalsMiddleware (req,res,next){
     const {id} = req.params
 
@@ -59,4 +78,4 @@ async function deleteRentalsMiddleware (req,res,next){
     next()
 }
 
-export { postRentalsMiddleware,deleteRentalsMiddleware };
+export { postRentalsMiddleware,deleteRentalsMiddleware,finishRentalsMiddleware };
