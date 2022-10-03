@@ -3,6 +3,81 @@ import { connection } from "../database/db.js";
 
 async function getRentals(req, res) {
    const { customerId, gameId } = req.query;
+   try {
+      if (customerId && !gameId) {
+         const rentals = (
+            await connection.query(
+               `SELECT rentals.*, 
+            JSON_BUILD_OBJECT('id', customers.id,'name', customers.name) AS customer, 
+            JSON_BUILD_OBJECT('id', games.id, 'name', games.name, 'categoryId', games."categoryId",'categoryName', categories.name) AS game
+            FROM rentals
+            JOIN games ON rentals."gameId"=games.id
+            JOIN customers ON rentals."customerId"=customers.id 
+            JOIN categories ON games."categoryId"=categories.id
+            WHERE rentals."customerId"=$1;
+          `,
+               [customerId]
+            )
+         ).rows;
+         res.send(rentals);
+         return;
+      }
+
+      if (gameId && !customerId) {
+         const rentals = (
+            await connection.query(
+               `SELECT rentals.*, 
+            JSON_BUILD_OBJECT('id', customers.id,'name', customers.name) AS customer, 
+            JSON_BUILD_OBJECT('id', games.id, 'name', games.name, 'categoryId', games."categoryId",'categoryName', categories.name) AS game
+            FROM rentals
+            JOIN games ON rentals."gameId"=games.id
+            JOIN customers ON rentals."customerId"=customers.id 
+            JOIN categories ON games."categoryId"=categories.id
+            WHERE rentals."gameId"=$1;
+          `,
+               [gameId]
+            )
+         ).rows;
+         res.send(rentals);
+         return;
+      }
+
+      if (gameId && customerId) {
+         const rentals = (
+            await connection.query(
+               `SELECT rentals.*, 
+            JSON_BUILD_OBJECT('id', customers.id,'name', customers.name) AS customer, 
+            JSON_BUILD_OBJECT('id', games.id, 'name', games.name, 'categoryId', games."categoryId",'categoryName', categories.name) AS game
+            FROM rentals
+            JOIN games ON rentals."gameId"=games.id
+            JOIN customers ON rentals."customerId"=customers.id 
+            JOIN categories ON games."categoryId"=categories.id
+            WHERE rentals."gameId"=$1 AND rentals."customerId"=$2;
+          `,
+               [gameId, customerId]
+            )
+         ).rows;
+         res.send(rentals);
+         return;
+      }
+
+      const rentals = (
+         await connection.query(
+            `SELECT rentals.*, 
+        JSON_BUILD_OBJECT('id', customers.id,'name', customers.name) AS customer, 
+        JSON_BUILD_OBJECT('id', games.id, 'name', games.name, 'categoryId', games."categoryId",'categoryName', categories.name) AS game
+        FROM rentals
+        JOIN games ON rentals."gameId"=games.id
+        JOIN customers ON rentals."customerId"=customers.id 
+        JOIN categories ON games."categoryId"=categories.id;
+        `
+         )
+      ).rows;
+      res.send(rentals);
+   } catch (error) {
+      console.log(error.message);
+      res.sendStatus(500);
+   }
 }
 
 async function postRentals(req, res) {
