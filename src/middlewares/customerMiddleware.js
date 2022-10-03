@@ -1,7 +1,7 @@
 import Joi from "joi";
 import { connection } from "../database/db.js";
 
-async function getCustomerByIdMiddleware(req, res, next) {
+async function CustomerIdMiddleware(req, res, next) {
    const { id } = req.params;
    try {
       const customerIdExists = (
@@ -18,17 +18,25 @@ async function getCustomerByIdMiddleware(req, res, next) {
    next();
 }
 
-async function postCustomerMiddleware(req, res, next) {
-   const {cpf} = req.body;
-   const customerObject = req.body
+async function CustomerMiddleware(req, res, next) {
+   const { cpf } = req.body;
+   const customerObject = req.body;
 
    const customerSchema = Joi.object({
       name: Joi.string().required(),
-      phone: Joi.string().pattern(/^[0-9]+$/).min(10).max(11),
-      cpf: Joi.string().length(11).pattern(/^[0-9]+$/).required(),
+      phone: Joi.string()
+         .pattern(/^[0-9]+$/)
+         .min(10)
+         .max(11),
+      cpf: Joi.string()
+         .length(11)
+         .pattern(/^[0-9]+$/)
+         .required(),
       birthday: Joi.date().required(),
    });
-   const validate = customerSchema.validate(customerObject, { abortEarly: false });
+   const validate = customerSchema.validate(customerObject, {
+      abortEarly: false,
+   });
    if (validate.error) {
       console.error(validate.error.details.map((detail) => detail.message));
       res.sendStatus(400);
@@ -36,16 +44,20 @@ async function postCustomerMiddleware(req, res, next) {
    }
 
    try {
-    const cpfExists = (await connection.query('SELECT * FROM customers WHERE cpf=($1);',[cpf])).rows[0]
-    if (cpfExists) {
-        res.sendStatus(409)
-        return
-    }
+      const cpfExists = (
+         await connection.query("SELECT * FROM customers WHERE cpf=($1);", [
+            cpf,
+         ])
+      ).rows[0];
+      if (cpfExists) {
+         res.sendStatus(409);
+         return;
+      }
    } catch (error) {
-    console.log(error.message)
-    res.sendStatus(500)
+      console.log(error.message);
+      res.sendStatus(500);
    }
    next();
 }
 
-export { getCustomerByIdMiddleware, postCustomerMiddleware };
+export { CustomerIdMiddleware, CustomerMiddleware };

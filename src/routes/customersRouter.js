@@ -1,11 +1,20 @@
 import { Router } from "express";
-import { getCustomerById, getCustomers, postCustomer } from "../controllers/customersController.js";
-import { getCustomerByIdMiddleware, postCustomerMiddleware } from "../middlewares/customerMiddleware.js";
+import {
+   getCustomerById,
+   getCustomers,
+   postCustomer,
+   putCustomer,
+} from "../controllers/customersController.js";
+import {
+   CustomerIdMiddleware,
+   CustomerMiddleware,
+} from "../middlewares/customerMiddleware.js";
 
-const customerRouter = Router()
+const customerRouter = Router();
 
-customerRouter.get('/customers', getCustomers)
-customerRouter.get('/customers/:id',getCustomerByIdMiddleware, getCustomerById)
-customerRouter.post('/customers', postCustomerMiddleware, postCustomer)
+customerRouter.get("/customers", getCustomers);
+customerRouter.get("/customers/:id", CustomerIdMiddleware, getCustomerById);
+customerRouter.post("/customers", CustomerMiddleware, postCustomer);
+customerRouter.put("/customers/:id", CustomerIdMiddleware, CustomerMiddleware, putCustomer);
 
-export default customerRouter
+export default customerRouter;
