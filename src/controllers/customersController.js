@@ -26,7 +26,7 @@ async function getCustomerById(req, res) {
    const { id } = req.params;
    try {
       const customer = (
-         await connection.query("SELECT * FROM customers WHERE id=($1)", [id])
+         await connection.query("SELECT * FROM customers WHERE id=($1);", [id])
       ).rows[0];
       res.send(customer);
    } catch (error) {
@@ -34,4 +34,19 @@ async function getCustomerById(req, res) {
       res.sendStatus(500);
    }
 }
-export { getCustomers, getCustomerById };
+
+async function postCustomer(req, res) {
+   const { name, phone, cpf, birthday } = req.body;
+   try {
+      await connection.query(
+         "INSERT INTO customers (name, phone, cpf, birthday) VALUES ($1,$2,$3,$4);",
+         [name, phone, cpf, birthday]
+      );
+      res.sendStatus(201)
+   } catch (error) {
+      console.log(error.message);
+      res.sendStatus(500);
+   }
+}
+
+export { getCustomers, getCustomerById, postCustomer };
