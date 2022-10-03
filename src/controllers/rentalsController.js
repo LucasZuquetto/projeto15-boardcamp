@@ -112,4 +112,26 @@ async function postRentals(req, res) {
    }
 }
 
-export { getRentals, postRentals };
+async function finishRentals(req,res){
+    const { id } = req.params
+    const dateNow = dayjs().format("YYYY-MM-DD")
+    try {
+        const rent = (await connection.query('SELECT "daysRented","rentDate", "gameId" FROM rentals WHERE id=($1);',[id])).rows[0]
+        await connection.query('UPDATE rentals SET "returnDate"=($1) WHERE id=($2);',[dateNow,id])
+    } catch (error) {
+        console.log(error.message)
+        res.sendStatus(500)
+    }
+}
+async function deleteRentals(req,res){
+    const {id} = req.params
+    try {
+        await connection.query('DELETE FROM rentals WHERE id=($1);',[id])
+        res.sendStatus(200)
+    } catch (error) {
+        console.log(error.message)
+        res.sendStatus(500)
+    }
+}
+
+export { getRentals, postRentals, finishRentals, deleteRentals };

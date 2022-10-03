@@ -36,4 +36,27 @@ async function postRentalsMiddleware(req, res, next) {
    next();
 }
 
-export { postRentalsMiddleware };
+async function deleteRentalsMiddleware (req,res,next){
+    const {id} = req.params
+
+    try {
+        const idExists = (await connection.query('SELECT * FROM rentals WHERE id=($1);',[id])).rows[0]
+        if (!idExists) {
+            res.sendStatus(404)
+            return
+        }
+        const isRentalValid = (await connection.query('SELECT * FROM rentals WHERE id=($1) AND "returnDate" IS NULL;',[id]))
+        if (!isRentalValid) {
+            res.sendStatus(400)
+            return
+        }
+
+    } catch (error) {
+        console.log(error.message)
+        res.sendStatus(500)
+    }
+
+    next()
+}
+
+export { postRentalsMiddleware,deleteRentalsMiddleware };
